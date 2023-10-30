@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>这是演示站</title>
+</head>
+
+<body>
+    <h1>访问追踪和统计器 - Visitation Tracker & Statistics</h1>
+
+<style>
+    body {
+        display: flex;
+        min-height: 100vh;
+        flex-direction: column;
+    }
+    
+    main {
+        flex: 1;
+    }
+    
+    #visit-count {
+        position: fixed;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    </style>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!--获取访问总数和时间IP-->
+<script>
+    $(document).ready(function() {
+        //获取数据表IP列表转换访问量
+        $.ajax({
+            url: 'get_visit_count.php',
+            method: 'GET',
+            success: function(response) {
+                $('#visit-count').text(response);
+            },
+            error: function(xhr, status, error) {
+                console.error('Error:', error);
+            }
+        });
+        //获取当前访问的用户IP，写入到数据库
+        $.ajax({
+            url: 'get_visitors.php?random=' + Math.random(),
+            method: 'GET',
+            error: function(xhr, status, error) {
+                console.error('Error:', error);
+            }
+        });
+    });
+</script>
+
+<!-- 访问次数 -->
+<a href="calculate_ip_statistics.php"><div id="visit-count"></div></a>
+</body>
+</html>
