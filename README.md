@@ -70,6 +70,9 @@ $(document).ready(function() {
 - **核心效率：** 以简单性和效率为设计理念，确保在各类项目中的无缝集成。
 
 
+# 演示
+点击转到[演示地址](https://keeleycenc.com/Mygithub/LightweightTracker/index.html)  
+
 ## 贡献者
 
 - [Keeleycenc](https://keeleycenc.com)
