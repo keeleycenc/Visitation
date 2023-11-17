@@ -1,7 +1,7 @@
 <!-- /**
 * @author Keeleycenc
 * @param  none
-* @version 1.1
+* @version 1.2
 * @link   https://keeleycenc.com
 */ -->
 <!DOCTYPE html>
@@ -11,8 +11,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LightweightTracker</title>
-</head>
-
 <style>
       h1 {
         color: #e74c3c;
@@ -54,16 +52,35 @@
         color: #d9534f;
         font-weight: bold;
     }
+    .pagination {
+        text-align: center;
+        margin-top: 20px;
+    }
+    .pagination a, .pagination span {
+        display: inline-block;
+        padding: 5px 10px;
+        margin-right: 5px;
+        border: 1px solid #ddd;
+        color: #337ab7;
+        text-decoration: none;
+    }
+    .pagination span.current-page {
+        font-weight: bold;
+        color: #fff;
+        background-color: #337ab7;
+        border-color: #337ab7;
+    }
 </style>
+</head>
 
 <body>
     <code>
         <?php
-        // 连接到数据库
+        // 数据库连接信息
         $servername = "localhost";
         $username = "用户名";
         $password = "密码";
-        $dbname = "数据库名";
+        $dbname = "数据库名";        
 
         // 创建数据库连接
         $conn = new mysqli($servername, $username, $password, $dbname);
@@ -98,7 +115,7 @@
           firstAccessTime;
           address;
 * @note   简单而高效尽管它没有高级功能
-* @version 1.1
+* @version 1.2
 * @link   https://keeleycenc.com
 */</h2>\n
 <h2>* This lightweight tracker is designed for simplicity and efficiency. It provides basic tracking
@@ -108,50 +125,74 @@
         } else {
             echo "<span class='error'>插入数据失败: " . $conn->error . "</span>";
         }
+        
+        // 分页设置
+        $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+        $recordsPerPage = 25;
+        $offset = ($currentPage - 1) * $recordsPerPage;
 
-        // 计算每个相同IP地址的总次数、最后一次访问时间、首次访问时间和地址
-        $sql = "SELECT 
-                    ip AS IP, 
-                    COUNT(ip) AS TotalCount, 
-                    MAX(time) AS LastAccessTime, 
-                    MIN(time) AS FirstAccessTime, 
-                address AS Address 
-                FROM visitors 
-                GROUP BY ip 
-                ORDER BY IP, time"; // 在这里添加排序逻辑
-        $result = $conn->query($sql);
+
+        // /计算总页数
+        $sqlPageCount = "SELECT COUNT(DISTINCT ip) AS count FROM visitors";
+        $totalCountResult = $conn->query($sqlPageCount);
+        $totalCountRow = $totalCountResult->fetch_assoc();
+        $totalPages = ceil($totalCountRow['count'] / $recordsPerPage);
+
+       //获取带有当前页面偏移量和限制的结果
+        $sqlFetchResults = "SELECT 
+        ip AS IP, 
+        COUNT(ip) AS TotalCount, 
+        MAX(time) AS LastAccessTime, 
+        MIN(time) AS FirstAccessTime,
+        address AS Address 
+        FROM visitors 
+        GROUP BY ip 
+        ORDER BY LastAccessTime DESC 
+        LIMIT $offset, $recordsPerPage";
+        $results = $conn->query($sqlFetchResults);
 
         // 统计不同IP地址的总数量
         $uniqueIPCount = 0;
 
         // 将计算结果插入新表中，使用 INSERT INTO ... ON DUPLICATE KEY UPDATE 来确保数据插入或更新
-        if ($result->num_rows > 0) {
-            while ($row = $result->fetch_assoc()) {
-                $ip = $row["IP"];
-                $totalCount = $row["TotalCount"];
-                $lastAccessTime = $row["LastAccessTime"];
-                $firstAccessTime = $row["FirstAccessTime"];
-                $address = $row["Address"];
+        if ($results->num_rows > 0) {
+            while ($row = $results->fetch_assoc()) {
+            $ip = $row["IP"];
+            $totalCount = $row["TotalCount"];
+            $lastAccessTime = $row["LastAccessTime"];
+            $firstAccessTime = $row["FirstAccessTime"];
+            $address = $row["Address"];
 
-                $sqlInsert = "INSERT INTO $newTableName (IP, TotalCount, LastAccessTime, FirstAccessTime, Address)
-                            VALUES ('$ip', $totalCount, '$lastAccessTime', '$firstAccessTime', '$address')
-                            ON DUPLICATE KEY UPDATE TotalCount = VALUES(TotalCount), LastAccessTime = VALUES(LastAccessTime), FirstAccessTime = VALUES(FirstAccessTime), Address = VALUES(Address)";
+            $sqlInsert = "INSERT INTO $newTableName (IP, TotalCount, LastAccessTime, FirstAccessTime, Address)
+            VALUES ('$ip', $totalCount, '$lastAccessTime', '$firstAccessTime', '$address')
+            ON DUPLICATE KEY UPDATE TotalCount = VALUES(TotalCount), LastAccessTime = VALUES(LastAccessTime), FirstAccessTime = VALUES(FirstAccessTime), Address = VALUES(Address)";
 
-                if ($conn->query($sqlInsert) !== TRUE) {
-                    echo "<span class='error'>插入数据失败: " . $conn->error . "</span>";
-                } else {
-                    echo "<span class='success'>Data replacement successful: IP=$ip, TotalCount=$totalCount, LastAccessTime=$lastAccessTime, FirstAccessTime=$firstAccessTime, Address=$address</span>";
-                }
-
-                // 增加不同IP地址的总数量
-                $uniqueIPCount++;
+            if ($conn->query($sqlInsert) !== TRUE) {
+            echo "<span class='error'>插入数据失败: " . $conn->error . "</span>";
+            } else {
+            echo "<span class='success'>Data replacement successful: IP=$ip, TotalCount=$totalCount, LastAccessTime=$lastAccessTime, FirstAccessTime=$firstAccessTime, Address=$address</span>";
             }
-        } else {
-            echo "<span class='error'>没有数据需要处理。</span>";
+
+            // 增加不同IP地址的总数量
+            $uniqueIPCount++;
+        }} else {
+        echo "<span class='error'>没有数据需要处理。</span>";
         }
 
+        // 如果有多个页面，则输出分页链接
+        if ($totalPages > 1) {
+            echo "<div class='pagination'>";
+            for ($i = 1; $i <= $totalPages; $i++) {
+                if ($currentPage == $i) {
+                    echo "<span class='current-page'>$i</span>";
+                } else {
+                    echo "<a href='?page=$i'>$i</a>";
+                }
+            }
+            echo "</div>";
+        }
         // 输出不同IP地址的总数量
-        echo "<span class='success'>有效访客量: $uniqueIPCount</span>";
+        echo "<span class='success'>Valid visitor: $uniqueIPCount</span>";
 
         // 关闭数据库连接
         $conn->close();
