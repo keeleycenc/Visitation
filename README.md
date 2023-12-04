@@ -36,6 +36,22 @@
 <div id="visitor-stats">加载中...</div>
 ```
 
+## V2版本可以作为打卡使用
+
+删除代码：
+
+```js
+// 页面加载时执行
+window.onload = function() {
+    loadVisitorStats();
+};
+```
+
+通过点击：
+```html
+<a href="javascript:void(0);" onclick="loadVisitorStats();">签到</a>
+```
+
 ## 演示
 
 点击转到 [V1版本演示地址](https://keeleycenc.com/Mygithub/LightweightTracker/index.html)  
@@ -65,12 +81,11 @@
 | 最后访问时间记录| ✅   | ✅   |
 | 总访问次数统计  | ✅   | ✅   |
 | 简易地理位置    | ✅   | ✅   |
-| 错误处理       | ❌   | ✅   |
 | 精确地理位置    | ❌   | ✅   |
-| 访问设备记录    | ❌   | ✅   |
-| 访问顺序记录    | ❌   | ✅   |
-| 博客实用性      | ❌   | ✅   |
+| 设备记录        | ❌   | ✅   |
+| 顺序记录        | ❌   | ✅   |
 | 查询耗时        | ❌   | ✅   |
+| 打卡功能        | ❌   | ✅   |
 
 ---
 
