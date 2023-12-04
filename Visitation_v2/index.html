@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <meta name="color-scheme" content="light dark">
+    <title>访问量统计</title>
+    <style>
+        #visitor-stats {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.5); 
+            padding: 10px;
+            text-align: center;
+            box-shadow: 0px -2px 5px rgba(255, 255, 255, 0.2);
+            font-family: Arial, sans-serif;
+            color: white;
+        }
+    
+        #visitor-stats-content {
+            background-color: transparent; 
+            border: 2px solid rgba(255, 255, 255, 0.8); 
+            padding: 10px;
+            border-radius: 10px; 
+        }
+    </style>    
+</head>
+<body>
+    <!-- 统计显示区域 -->
+    <div id="visitor-stats">
+        加载中...
+    </div>
+
+    <script>
+    // 使用AJAX获取统计数据
+    function loadVisitorStats() {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'visitor-stats.php', true);
+
+        // 设置请求超时时间
+        xhr.timeout = 3000; 
+        // 处理超时
+        xhr.ontimeout = function() {
+            document.getElementById('visitor-stats').innerHTML = '加载超时，请点击 <a href="javascript:void(0);" onclick="loadVisitorStats();">重新加载</a> 或检查你的网络';
+        };
+
+        // 在发送请求之前记录开始时间
+        var startTime = new Date().getTime();
+
+        // 使用AJAX获取统计数据
+        xhr.onload = function() {
+            if (this.status == 200) {
+                // 请求完成时记录当前时间
+                var endTime = new Date().getTime();
+
+                // 计算耗时（毫秒）
+                var timeTaken = endTime - startTime;
+                try {
+                    var stats = JSON.parse(this.responseText);
+                    document.getElementById('visitor-stats').innerHTML =
+                        '来自 ' + stats.location + ' 的用户<br>' +
+                        '你是今日的第 ' + stats.daily_order + ' 个访客<br>' +
+                        '今日总访问量： ' + stats.today + ' 次<br>' +
+                        '昨日访问量： ' + (stats.yesterday || 0) + ' 次<br>' + // 处理空值
+                        '本站总访问量： ' + stats.total + ' 次<br>' +
+                        '本次查询耗时： ' + timeTaken + ' 毫秒';
+                } catch (e) {
+                    if (e instanceof SyntaxError) {
+                        handleJSONParseError();
+                    }
+                }
+            } else {
+                handleRequestError();
+            }
+        }
+        xhr.send();
+    }
+
+    function handleJSONParseError() {
+        document.getElementById('visitor-stats').innerHTML = '响应错误，请点击<a href="javascript:void(0);" onclick="loadVisitorStats();">重新加载</a>';
+    }
+
+    function handleRequestError() {
+        document.getElementById('visitor-stats').innerHTML = '请求失败，请点击<a href="javascript:void(0);" onclick="loadVisitorStats();">重新加载</a>';
+    }
+
+
+    // 页面加载时执行
+    window.onload = function() {
+        loadVisitorStats();
+    };
+
+    </script>
+</body>
+</html>
