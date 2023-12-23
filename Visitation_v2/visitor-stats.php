@@ -2,89 +2,112 @@
 /**
 * @author Keeleycenc
 * @param  none
-* @version 2.0
+* @version 2.1
 * @link   https://keeleycenc.com
 */
 
-// Á¬½ÓÊý¾Ý¿â
+// è¿žæŽ¥æ•°æ®åº“
 $servername = "localhost";
-$username = "ÓÃ»§Ãû";
-$password = "ÃÜÂë";
-$dbname = "Êý¾Ý¿âÃû";
+$username = "ç”¨æˆ·å";
+$password = "å¯†ç ";
+$dbname = "æ•°æ®åº“å";
 
-// ´´½¨Á¬½Ó
+// åˆ›å»ºè¿žæŽ¥
 $conn = new mysqli($servername, $username, $password, $dbname);
 
-// ¼ì²éÁ¬½Ó
+// æ£€æŸ¥è¿žæŽ¥
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-$currentDateTime = date("Y-m-d H:i:s"); // ÉèÖÃµ±Ç°ÈÕÆÚºÍÊ±¼ä
+$currentDateTime = date("Y-m-d H:i:s"); // è®¾ç½®å½“å‰æ—¥æœŸå’Œæ—¶é—´
 
-// ¼ì²é²¢¸üÐÂ±í½á¹¹
+// æ£€æŸ¥å¹¶æ›´æ–°è¡¨ç»“æž„
 $table = "CREATE TABLE IF NOT EXISTS visitor_count (
-    id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY, -- Ö÷¼ü£¬×ÔÔö£¬ÓÃÓÚÎ¨Ò»±êÊ¶Ã¿Ìõ¼ÇÂ¼
-    ip VARCHAR(45),                                -- ·ÃÎÊÕßµÄIPµØÖ·
-    location VARCHAR(100),                         -- ·ÃÎÊÕßµÄµØÀíÎ»ÖÃ
-    device VARCHAR(190),                           -- ·ÃÎÊÕßÊ¹ÓÃµÄÉè±¸ÐÅÏ¢
-    visits INT(30) NOT NULL,                       -- µ±Ìì¸ÃIPºÍÉè±¸µÄ·ÃÎÊ´ÎÊý
-    date DATE NOT NULL,                            -- ¼ÇÂ¼µÄÈÕÆÚ
-    total_visits INT(11) NOT NULL DEFAULT 1,       -- ¸ÃIPºÍÉè±¸µÄ×Ü·ÃÎÊ´ÎÊý£¬Ä¬ÈÏÎª1
-    first_visit_time DATETIME NULL,                -- ¸ÃIPºÍÉè±¸µÄÊ×´Î·ÃÎÊÊ±¼ä
-    last_visit_time DATETIME NULL,                 -- ¸ÃIPºÍÉè±¸µÄ×îºó·ÃÎÊÊ±¼ä
-    UNIQUE KEY unique_visit (ip, device, date)     -- ×éºÏ¼ü£¬±£Ö¤Í¬Ò»IPºÍÉè±¸ÔÚÍ¬Ò»ÌìµÄ¼ÇÂ¼ÊÇÎ¨Ò»µÄ
+    id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY, -- ä¸»é”®ï¼Œè‡ªå¢žï¼Œç”¨äºŽå”¯ä¸€æ ‡è¯†æ¯æ¡è®°å½•
+    ip VARCHAR(50),                                -- è®¿é—®è€…çš„IPåœ°å€
+    location VARCHAR(100),                         -- è®¿é—®è€…çš„åœ°ç†ä½ç½®
+    device VARCHAR(255),                           -- è®¿é—®è€…ä½¿ç”¨çš„è®¾å¤‡ä¿¡æ¯
+    visits INT(30) NOT NULL,                       -- å½“å¤©è¯¥IPå’Œè®¾å¤‡çš„è®¿é—®æ¬¡æ•°
+    date DATE NOT NULL,                            -- è®°å½•çš„æ—¥æœŸ
+    total_visits INT(11) NOT NULL DEFAULT 1,       -- è¯¥IPå’Œè®¾å¤‡çš„æ€»è®¿é—®æ¬¡æ•°ï¼Œé»˜è®¤ä¸º1
+    first_visit_time DATETIME NULL,                -- è¯¥IPå’Œè®¾å¤‡çš„é¦–æ¬¡è®¿é—®æ—¶é—´
+    last_visit_time DATETIME NULL,                 -- è¯¥IPå’Œè®¾å¤‡çš„æœ€åŽè®¿é—®æ—¶é—´
+    UNIQUE KEY unique_visit (ip, device, date)     -- ç»„åˆé”®ï¼Œä¿è¯åŒä¸€IPå’Œè®¾å¤‡åœ¨åŒä¸€å¤©çš„è®°å½•æ˜¯å”¯ä¸€çš„
 )";
+
 if ($conn->query($table) === FALSE) {
     die("Error creating table: " . $conn->error);
 }
 
-// ¼ì²é²¢Ìí¼Ódaily_orderÁÐ
+// æ£€æŸ¥å¹¶æ·»åŠ daily_orderåˆ—
 $checkColumn = "SHOW COLUMNS FROM visitor_count LIKE 'daily_order'";
 $columnResult = $conn->query($checkColumn);
 
 if ($columnResult->num_rows == 0) {
-    // Èç¹ûdaily_orderÁÐ²»´æÔÚ£¬ÔòÌí¼ÓËü
+    // å¦‚æžœdaily_orderåˆ—ä¸å­˜åœ¨ï¼Œåˆ™æ·»åŠ å®ƒ
     $alterTable = "ALTER TABLE visitor_count ADD daily_order INT(6) UNSIGNED AFTER date";
     $conn->query($alterTable);
 }
 
 $conn->query($table);
 
-// »ñÈ¡ÓÃ»§IPºÍÉè±¸ÐÅÏ¢
+// èŽ·å–ç”¨æˆ·IPå’Œè®¾å¤‡ä¿¡æ¯
 $user_IpAddress = $_SERVER['REMOTE_ADDR'];
 $userAgent = $_SERVER['HTTP_USER_AGENT'];
+$userAgent = preg_replace('/\s+/', ' ', $userAgent); // æ›¿æ¢æ‰€æœ‰ç©ºæ ¼ä¸ºæ ‡å‡†ç©ºæ ¼
 
-// IP¹éÊôµØ²éÑ¯
+// IPå½’å±žåœ°æŸ¥è¯¢
 function getIpLocation($ip) {
-    // ¹¹½¨²éÑ¯µÄURL
-    $apiUrl = 'http://ip.plyz.net/ip.ashx?ip=' . $ip;    
-    // ·¢ËÍGETÇëÇó
-    $response = file_get_contents($apiUrl);    
-    // ½âÎöÏìÓ¦
+    // æž„å»ºæŸ¥è¯¢çš„URL
+    $apiUrl = 'http://ip.plyz.net/ip.ashx?ip=' . urlencode($ip);
+
+    // åˆå§‹åŒ–cURLä¼šè¯
+    $curl = curl_init();
+    // è®¾ç½®cURLé€‰é¡¹
+    curl_setopt($curl, CURLOPT_URL, $apiUrl);
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($curl, CURLOPT_TIMEOUT, 100);  // è®¾ç½®è¶…æ—¶æ—¶é—´ï¼ˆå¯æ ¹æ®éœ€è¦è°ƒæ•´ï¼‰
+
+    // æ‰§è¡ŒcURLä¼šè¯
+    $response = curl_exec($curl);
+
+    // æ£€æŸ¥æ˜¯å¦æœ‰é”™è¯¯å‘ç”Ÿ
+    if(curl_errno($curl)){
+        curl_close($curl);
+        return 'æœªçŸ¥å½’å±žåœ°'; // åœ¨å‡ºé”™æ—¶è¿”å›žé»˜è®¤å€¼
+    }
+
+    curl_close($curl);
+
+    // è§£æžå“åº”
     if ($response) {
-        // ¼ÙÉèÏìÓ¦µÄ¸ñÊ½ÊÇ "IP|¹éÊôµØ"£¬ÒÔÊúÏß·Ö¸ô
+        // å‡è®¾å“åº”çš„æ ¼å¼æ˜¯ "IP|å½’å±žåœ°"ï¼Œä»¥ç«–çº¿åˆ†éš”
         $parts = explode('|', $response);            
         if (count($parts) >= 2) {
-            // ½øÒ»²½½âÎö¹éÊôµØÐÅÏ¢£¬¼ÙÉè¸ñÊ½ÊÇ "¹ú¼Ò Ê¡·Ý ³ÇÊÐ ÔËÓªÉÌ"
+            // è¿›ä¸€æ­¥è§£æžå½’å±žåœ°ä¿¡æ¯ï¼Œå‡è®¾æ ¼å¼æ˜¯ "å›½å®¶ çœä»½ åŸŽå¸‚ è¿è¥å•†"
             $locationParts = explode(' ', $parts[1]);
-            if (count($locationParts) >= 2) {
-                return $locationParts[1]; // ·µ»ØÊ¡·Ý²¿·Ö
+            if (count($locationParts) >= 3) {
+                // å¦‚æžœæœ‰çœä»½å’ŒåŸŽå¸‚
+                return $locationParts[1] . ' ' . $locationParts[2]; // è¿”å›žçœä»½å’ŒåŸŽå¸‚éƒ¨åˆ†
+            } elseif (count($locationParts) == 2) {
+                // åªæœ‰å›½å®¶å’Œçœä»½
+                return $locationParts[1]; // åªè¿”å›žçœä»½éƒ¨åˆ†
             } else {
-                return 'Î´Öª¹éÊôµØ'; // Èç¹ûÎÞ·¨½âÎöÊ¡·Ý£¬Ôò·µ»ØÄ¬ÈÏÖµ
+                return 'æœªçŸ¥å½’å±žåœ°'; // å¦‚æžœæ— æ³•è§£æžçœä»½ï¼Œåˆ™è¿”å›žé»˜è®¤å€¼
             }
         } else {
-            return 'Î´Öª¹éÊôµØ'; // Èç¹ûÎÞ·¨½âÎöÏìÓ¦£¬Ôò·µ»ØÄ¬ÈÏÖµ
+            return 'æœªçŸ¥å½’å±žåœ°'; // å¦‚æžœæ— æ³•è§£æžå“åº”ï¼Œåˆ™è¿”å›žé»˜è®¤å€¼
         }
     } else {
-        return 'Î´Öª¹éÊôµØ'; // Èç¹ûÎÞ·¨»ñÈ¡ÏìÓ¦£¬Ôò·µ»ØÄ¬ÈÏÖµ
+        return 'æœªçŸ¥å½’å±žåœ°'; // å¦‚æžœæ— æ³•èŽ·å–å“åº”ï¼Œåˆ™è¿”å›žé»˜è®¤å€¼
     }
 }
 
 
 $userLocation = getIpLocation($user_IpAddress);
 
-// ¼ÆËãµ±ÌìµÄ·Ã¿ÍË³Ðò
+// è®¡ç®—å½“å¤©çš„è®¿å®¢é¡ºåº
 function calculateDailyOrder($date) {
     global $conn;
     $query = "SELECT MAX(daily_order) as maxOrder FROM visitor_count WHERE date='$date'";
@@ -93,49 +116,33 @@ function calculateDailyOrder($date) {
     return ($row["maxOrder"] + 1);
 }
 
-// ¼ì²é½ñÌì´ËIPºÍÉè±¸µÄ·ÃÎÊ¼ÇÂ¼
+// æ£€æŸ¥ä»Šå¤©æ­¤IPå’Œè®¾å¤‡çš„è®¿é—®è®°å½•
 $date = date("Y-m-d");
-$checkQuery = "SELECT daily_order FROM visitor_count WHERE ip='$user_IpAddress' AND device='$userAgent' AND date='$date'";
+$checkQuery = "SELECT daily_order, total_visits FROM visitor_count WHERE ip='$user_IpAddress' AND device='$userAgent' AND date='$date'";
 $checkResult = $conn->query($checkQuery);
 
+$isNewVisitor = false; // æ–°å¢žå˜é‡ç”¨äºŽæ ‡è¯†æ˜¯å¦ä¸ºæ–°è®¿å®¢
+
 if ($checkResult->num_rows == 0) {
-    // Èç¹ûÃ»ÓÐÕÒµ½¼ÇÂ¼£¬ÔòÎªÐÂ·Ã¿Í£¬·ÖÅäÐÂµÄdaily_order
+    // æ–°è®¿å®¢é€»è¾‘
     $dailyOrder = calculateDailyOrder($date);
-    $insert = "INSERT INTO visitor_count (ip, location, device, visits, date, daily_order) VALUES ('$user_IpAddress', '$userLocation', '$userAgent', 1, '$date', '$dailyOrder')";
+    $insert = "INSERT INTO visitor_count (ip, location, device, visits, date, daily_order, first_visit_time, last_visit_time) VALUES ('$user_IpAddress', '$userLocation', '$userAgent', 1, '$date', '$dailyOrder', '$currentDateTime', '$currentDateTime')";
     $conn->query($insert);
+    $isNewVisitor = true; // æ ‡è®°ä¸ºæ–°è®¿å®¢
 } else {
-    // Èç¹ûÕÒµ½¼ÇÂ¼£¬Ê¹ÓÃÒÑÓÐµÄdaily_order
+    // ä¸æ˜¯æ–°è®¿å®¢ï¼Œæ›´æ–°çŽ°æœ‰è®°å½•
     $row = $checkResult->fetch_assoc();
     $dailyOrder = $row["daily_order"];
+    $currentTotalVisits = $row["total_visits"]; // èŽ·å–å½“å‰çš„ total_visits å€¼
+    $newTotalVisits = $currentTotalVisits + 1;  // å¢žåŠ 1
+
+    // æ›´æ–°æ•°æ®åº“ä¸­çš„ total_visits å’Œ last_visit_time å€¼
+    $updateQuery = "UPDATE visitor_count SET total_visits=$newTotalVisits, last_visit_time='$currentDateTime' WHERE ip='$user_IpAddress' AND device='$userAgent' AND date='$date'";
+    $conn->query($updateQuery);
 }
 
 
-
-// ¼ì²é´ËIPµÄ×Ü·ÃÎÊ¼ÇÂ¼ºÍÊ×´Î·ÃÎÊÊ±¼ä
-$totalCheckQuery = "SELECT id, total_visits, first_visit_time FROM visitor_count WHERE ip='$user_IpAddress' AND device='$userAgent'";
-$totalCheckResult = $conn->query($totalCheckQuery);
-
-if ($totalCheckResult->num_rows > 0) {
-    // Èç¹ûÕÒµ½¼ÇÂ¼£¬Ôö¼Ó·ÃÎÊ´ÎÊý²¢¸üÐÂ×îºó·ÃÎÊÊ±¼ä
-    $row = $totalCheckResult->fetch_assoc();
-    $newTotalVisits = $row["total_visits"] + 1;
-
-    // ¼ì²é first_visit_time ÊÇ·ñÎª null£¬²¢ÏàÓ¦¸üÐÂ
-    $firstVisitTimeUpdate = "";
-    if (is_null($row["first_visit_time"])) {
-        $firstVisitTimeUpdate = ", first_visit_time='$currentDateTime'";
-    }
-
-    $updateTotalVisits = "UPDATE visitor_count SET total_visits=$newTotalVisits, last_visit_time='$currentDateTime'$firstVisitTimeUpdate WHERE id=" . $row["id"];
-    $conn->query($updateTotalVisits);
-} else {
-    // Èç¹ûÃ»ÓÐÕÒµ½¼ÇÂ¼£¬²åÈëÐÂ¼ÇÂ¼²¢ÉèÖÃÊ×´ÎºÍ×îºó·ÃÎÊÊ±¼ä
-    $dailyOrder = calculateDailyOrder($date);
-    $insertNewRecord = "INSERT INTO visitor_count (ip, location, device, visits, date, daily_order, total_visits, first_visit_time, last_visit_time) VALUES ('$user_IpAddress', '$userLocation', '$userAgent', 1, '$date', '$dailyOrder', 1, '$currentDateTime', '$currentDateTime')";
-    $conn->query($insertNewRecord);
-}
-
-// »ñÈ¡Í³¼ÆÊý¾Ý
+// èŽ·å–ç»Ÿè®¡æ•°æ®
 function getVisits($date) {
     global $conn;
     $query = "SELECT SUM(visits) as totalVisits FROM visitor_count WHERE date='$date'";
@@ -148,14 +155,14 @@ function getVisits($date) {
     }
 }
 
-// »ñÈ¡½ñÈÕ¡¢×òÈÕºÍ×Ü·ÃÎÊÁ¿
+// èŽ·å–ä»Šæ—¥ã€æ˜¨æ—¥å’Œæ€»è®¿é—®é‡
 $todayVisits = getVisits(date("Y-m-d"));
 $yesterdayVisits = getVisits(date("Y-m-d", strtotime("-1 day")));
 $totalResult = $conn->query("SELECT SUM(visits) AS totalVisits FROM visitor_count");
 $totalRow = $totalResult->fetch_assoc();
 $totalVisits = $totalRow["totalVisits"];
 
-// ·µ»ØJSON¸ñÊ½µÄÊý¾Ý
+// è¿”å›žJSONæ ¼å¼çš„æ•°æ®
 echo json_encode(array(
     "daily_order" => $dailyOrder, 
     "today" => $todayVisits, 
@@ -167,3 +174,4 @@ echo json_encode(array(
 
 $conn->close();
 ?>
+
